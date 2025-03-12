@@ -1,6 +1,6 @@
 # End-User License Agreement (\"Agreement\")
 
-Our EULA was last updated on 2026/06/26
+Our EULA was last updated on 2025/03/12
 
 Please read this End-User License Agreement carefully before clicking
 the \"I Agree\" button, downloading or using Cipher-MD.
@@ -346,6 +346,6 @@ provide to You at the time of such use or purchase.
 
 If you have any questions about this Agreement, You can contact Us:
 
-- By visiting this page on our website: https://cipher-md.vercel.app/
+- By visiting this page on our website: https://md.s4z.top/
 
 - By sending us an email: hello@shalukagimhan.com
