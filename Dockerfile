@@ -23,4 +23,4 @@ RUN npm install --legacy-peer-deps --production
 COPY . .
 RUN chown -R node:node /home/node/app
 USER node
-CMD ["node", "index1.js"]
+CMD ["node", "index2.js"]
