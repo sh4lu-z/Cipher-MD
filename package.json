@@ -4,7 +4,7 @@
   "description": "Advanced WhatsApp AI Bot - CIPTER-MD Core Engine",
   "author": "sh4lu_z",
   "license": "SEE LICENSE IN LICENSE",
-  "main": "index2.js",
+  "main": "start.js",
   "scripts": {
     "start": "node start.js",
     "test": "node test.js"
@@ -31,12 +31,8 @@
     "mongodb": "^7.1.0",
     "mongoose": "^9.1.6",
     "node-cron": "^4.2.1",
-    "openai": "^6.18.0",
     "pdf-parse": "^2.4.5",
     "pino": "^10.3.0",
-    "puppeteer": "^24.37.2",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "qrcode-terminal": "^0.12.0",
     "sharp": "^0.34.5",
     "speakeasy": "^2.0.0",
