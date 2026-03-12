@@ -4,9 +4,9 @@
   "description": "Advanced WhatsApp AI Bot - CIPTER-MD Core Engine",
   "author": "sh4lu_z",
   "license": "SEE LICENSE IN LICENSE",
-  "main": "start.js",
+  "main": "index2.js",
   "scripts": {
-    "start": "node start.js",
+    "start": "node index2.js",
     "test": "node test.js"
   },
   "dependencies": {
