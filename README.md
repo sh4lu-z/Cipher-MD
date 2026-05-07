@@ -2,7 +2,7 @@
 <div align="center">
 
 <a href="https://cipher-md.vercel.app/">
-  <img src="https://i.ibb.co/Fqkx25c5/balloon-Minimalist-Desktop-Wallpaper-1.png" alt="CIPHER-MD Banner" style="border-radius: 15px; width: 50%; max-width: 200px;">
+  <img src="https://i.ibb.co/Fqkx25c5/balloon-Minimalist-Desktop-Wallpaper-1.png" alt="CIPHER-MD Banner" style="border-radius: 15px; width: 75%; max-width: 300px;">
 </a>
 
 # ✦ CIPHER-MD ✦
