@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&random=false&width=435&lines=sh4lu-z;Developer+%2F+Engineer+%2F+Designer;Always+learning+new+things" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&random=false&width=435&lines=sh4lu-z;Developer+%2F+Designer;CIPHER-MD" alt="Typing SVG" />
   </a>
 </p>
 
@@ -25,8 +25,8 @@
 
 <br>
 
-> ### 🛡️ SYSTEM INTEGRITY PROTOCOL
-> **"MODIFICATION OF THIS CORE ENGINE IS STRICTLY PROHIBITED"**
+> ### 🛡️ $\color{red}{\text{SYSTEM INTEGRITY PROTOCOL}}$
+> **$\color{orange}{\text{"MODIFICATION OF THIS CORE ENGINE IS STRICTLY PROHIBITED"}}$**
 
 </div>
 
@@ -36,7 +36,9 @@
 
 **CIPHER-MD** is a high-performance, multi-functional WhatsApp AI bot built by **[sh4lu_z](https://github.com/sh4lu-z)**. It integrates advanced AI models (**Groq, OpenAI**) and heavy media processing tools to deliver a seamless automated experience right to your WhatsApp inbox.
 
-> 🌐 **EXPLORE FULL BOT DETAILS:** To see the complete list of 100+ commands, extra features, and detailed information about the bot, please visit our official website: <br> 👉 **[cipher-md.vercel.app](https://cipher-md.vercel.app/)**
+> 🌐 **EXPLORE FULL BOT DETAILS:** To see the complete list of 100+ commands, extra features, and detailed information about the bot, please visit our official website: <br>
+
+[![Visit Site](https://img.shields.io/badge/Visit_Site-cipher--md-2ea44f?style=flat-square)](https://cipher-md.vercel.app/)
 
 ---
 
@@ -73,7 +75,6 @@ Get started quickly! Follow the buttons below to Fork, Connect, and Deploy:
 | 📊 **Web Scraping** | Automated job searching, data extraction, and real-time information retrieval. |
 | 🔒 **Secure Kernel** | Built-in system integrity checks and DRM protection to prevent unauthorized modifications. |
 
-*...and many more advanced features waiting to be explored on our **[Main Website](https://cipher-md.vercel.app/)**!*
 
 ---
 
@@ -125,7 +126,7 @@ Now that you have your Session ID and Variables ready, click on any of the butto
 By using CIPHER-MD, you automatically agree to the following conditions:
 
 1. 🚫 **No Modifications:** You are **NOT** allowed to edit, modify, or re-brand any part of this source code.
-2. © **Proprietary Software:** All rights belong to **sh4lu_z**. Unauthorized redistribution is a strict breach of privacy protocols.
+2. ©️ **Proprietary Software:** All rights belong to **sh4lu_z**. Unauthorized redistribution is a strict breach of privacy protocols.
 3. 🛑 **No Responsibility:** The author (`sh4lu_z`) is **NOT** responsible for any WhatsApp account bans or data loss. Use at your own risk.
 
 ---
@@ -140,6 +141,6 @@ By using CIPHER-MD, you automatically agree to the following conditions:
 
 <br>
 
-*Maintained by **[sh4lu_z](https://github.com/sh4lu-z)** © 2026 sh4lu_z Inc. All Rights Reserved.*
+*© 2026 **[sh4lu_z](https://github.com/sh4lu-z)** Inc. All Rights Reserved.*
 
 </div>
