@@ -13,6 +13,7 @@
     "@google/genai": "latest",
     "@gradio/client": "latest",
     "@whiskeysockets/baileys": "latest",
+    "megajs": "1.3.10",
     "adm-zip": "latest",
     "assemblyai": "latest",
     "axios": "latest",
