@@ -36,6 +36,7 @@
     "mongodb": "latest",
     "mongoose": "latest",
     "node-cron": "latest",
+    "openai": "latest",
     "pdf-parse": "latest",
     "pino": "latest",
     "qrcode-terminal": "latest",
