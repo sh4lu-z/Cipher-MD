@@ -60,6 +60,14 @@ Get started quickly! Follow the buttons below to Fork, Connect, and Deploy:
     <img src="https://img.shields.io/badge/🌐_Main_Website-Full_Details-10B981?style=for-the-badge" alt="Main Website">
   </a>
 </p>
+<p align="center">
+  <a href="CIPHER_MD.md">
+    <img src="https://img.shields.io/badge/📖_Main_Bot_Wiki-Read_Now-FF69B4?style=for-the-badge" alt="Main Bot Wiki">
+  </a>
+  <a href="CIPHER_MD_GROUP_WIKI.md">
+    <img src="https://img.shields.io/badge/👥_Group_Wiki-Read_Now-FF8C00?style=for-the-badge" alt="Group Wiki">
+  </a>
+</p>
 
 ---
 
