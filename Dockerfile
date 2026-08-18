@@ -1,11 +1,10 @@
 FROM node:20-alpine
 
-WORKDIR /home/node/app
-
-# Koyeb එකේ හිර නොවී build වෙන Alpine dependencies (FFmpeg, Git, Chromium සහ Graphics libs)
+# unzip ඇතුළුව අවශ්‍ය tools install කිරීම
 RUN apk add --no-cache \
     ffmpeg \
     git \
+    unzip \
     chromium \
     nss \
     freetype \
@@ -14,9 +13,11 @@ RUN apk add --no-cache \
     ttf-freefont \
     libstdc++
 
-# Puppeteer භාවිතා කරන්නේ නම් System Chromium එක point කිරීම
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Path එක හරියටම /home/node/app තියන්න
+WORKDIR /home/node/app
 
 COPY package*.json ./
 
@@ -27,4 +28,5 @@ COPY --chown=node:node . .
 USER node
 
 CMD ["node", "start.js"]
+
 
