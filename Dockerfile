@@ -1,7 +1,8 @@
-FROM node:20-bullseye-slim
+
+
+FROM node:20-bookworm-slim
 
 WORKDIR /home/node/app
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -20,12 +21,11 @@ RUN apt-get update && \
     libgbm1 \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
-
 COPY package*.json ./
 
 RUN npm install --legacy-peer-deps --production
-COPY . .
-RUN chown -R node:node /home/node/app
+COPY --chown=node:node . .
+
 USER node
 
 CMD ["node", "start.js"]
