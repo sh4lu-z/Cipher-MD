@@ -18,7 +18,10 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 WORKDIR /home/node/app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps --production
-COPY --chown=node:node . .
+COPY . .
+
+RUN chown -R node:node /home/node/app
+
 USER node
 
 CMD ["node", "--require", "./patch.js", "start.js"]
