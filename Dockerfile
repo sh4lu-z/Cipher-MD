@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim
+FROM node:20
 
 WORKDIR /home/node/app
 
@@ -24,6 +24,7 @@ RUN apt-get update && \
 COPY package*.json ./
 
 RUN npm install --legacy-peer-deps --production
+
 COPY . .
 RUN chown -R node:node /home/node/app
 USER node
