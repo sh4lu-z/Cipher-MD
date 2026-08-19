@@ -1,37 +1,24 @@
-FROM ubuntu:22.04
+FROM node:20-alpine
 
-WORKDIR /home/node/app
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install Node.js 20, ffmpeg and other dependencies
-RUN apt-get update && \
-    apt-get install -y curl ca-certificates && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y \
-    nodejs \
+RUN apk add --no-cache \
     ffmpeg \
     git \
     unzip \
-    libgl1 \
-    libglib2.0-0 \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libasound2 \
-    && rm -rf /var/lib/apt/lists/*
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    libstdc++
 
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /home/node/app
 COPY package*.json ./
-
 RUN npm install --legacy-peer-deps --production
+COPY --chown=node:node . .
+USER node
 
-COPY . .
-
-CMD ["node", "start.js"]
+CMD ["node", "--require", "./patch.js", "start.js"]
