@@ -1,32 +1,31 @@
-FROM node:20-alpine
+FROM node:20-bullseye-slim
 
-# unzip ඇතුළුව අවශ්‍ය tools install කිරීම
-RUN apk add --no-cache \
+WORKDIR /home/node/app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     ffmpeg \
     git \
-    unzip \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    libstdc++
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# Path එක හරියටම /home/node/app තියන්න
-WORKDIR /home/node/app
+    libgl1 \
+    libglib2.0-0 \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 
 RUN npm install --legacy-peer-deps --production
-
-COPY --chown=node:node . .
-
+COPY . .
+RUN chown -R node:node /home/node/app
 USER node
 
 CMD ["node", "start.js"]
-
-
