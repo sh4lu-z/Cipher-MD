@@ -1,8 +1,6 @@
 FROM node:20-bullseye-slim
 WORKDIR /home/node/app
 
-RUN echo "====== STEP 1: STARTING APT-GET UPDATE ======"
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ffmpeg \
@@ -22,20 +20,13 @@ RUN apt-get update && \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN echo "====== STEP 1: APT-GET SUCCESS ======"
-
 COPY package*.json ./
-
-RUN echo "====== STEP 2: STARTING NPM INSTALL ======"
-
-RUN npm install --legacy-peer-deps --production --verbose
-
-RUN echo "====== STEP 2: NPM INSTALL SUCCESS ======"
+RUN npm install --legacy-peer-deps --production
 
 COPY . .
 RUN chown -R node:node /home/node/app
 USER node
 
-RUN echo "====== STEP 3: BUILD FINISHED SUCCESSFULLY ======"
+EXPOSE 8000
 
 CMD ["node", "start.js"]
