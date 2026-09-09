@@ -10,6 +10,11 @@ if [ ! -t 0 ]; then
     exit 1
 fi
 
+SUDO=""
+if [ "$(id -u)" -ne 0 ] && command -v sudo &> /dev/null; then
+    SUDO="sudo"
+fi
+
 TARGET_DIR="$HOME/.sh4lu-z/CIPHER MD"
 mkdir -p "$TARGET_DIR"
 cd "$TARGET_DIR" || exit
@@ -39,8 +44,16 @@ else
 fi
 
 echo "Extracting files..."
+if ! command -v unzip &> /dev/null; then
+    echo "[INFO] unzip command not found. Attempting to install unzip..."
+    if command -v apt &> /dev/null; then
+        $SUDO apt update && $SUDO apt install -y unzip
+    elif command -v pkg &> /dev/null; then
+        pkg install -y unzip
+    fi
+fi
 unzip -o -q Cipher-MD.zip || {
-    echo "unzip command not found. Please install unzip first."
+    echo "[ERROR] unzip command not found or failed. Please install unzip first."
     exit 1
 }
 rm Cipher-MD.zip
@@ -101,8 +114,28 @@ if [ "$CREATE_ENV" == "Y" ]; then
     read -p "AI Agent Model (default: gemini-3.1-flash-lite): " AI_AGENT_MODEL
     echo ""
     echo "[Agentic Tasks - Emails, Calendar, etc.]"
-    read -p "Google Credentials JSON (Paste as single line): " GOOGLE_CREDENTIALS
-    read -p "Google Token JSON (Paste as single line): " GOOGLE_TOKEN
+    read -p "Google Credentials (Paste single line OR Drag & Drop file here): " GOOGLE_CREDENTIALS
+    # Remove quotes that might be added by drag-and-drop
+    GOOGLE_CREDENTIALS="${GOOGLE_CREDENTIALS//\"/}"
+    GOOGLE_CREDENTIALS="${GOOGLE_CREDENTIALS//\'/}"
+    if [ -f "$GOOGLE_CREDENTIALS" ]; then
+        if command -v node &> /dev/null; then
+            GOOGLE_CREDENTIALS=$(node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync(process.argv[1]))))" "$GOOGLE_CREDENTIALS" 2>/dev/null || cat "$GOOGLE_CREDENTIALS" | tr -d '\n\r')
+        else
+            GOOGLE_CREDENTIALS=$(cat "$GOOGLE_CREDENTIALS" | tr -d '\n\r')
+        fi
+    fi
+
+    read -p "Google Token (Paste single line OR Drag & Drop file here): " GOOGLE_TOKEN
+    GOOGLE_TOKEN="${GOOGLE_TOKEN//\"/}"
+    GOOGLE_TOKEN="${GOOGLE_TOKEN//\'/}"
+    if [ -f "$GOOGLE_TOKEN" ]; then
+        if command -v node &> /dev/null; then
+            GOOGLE_TOKEN=$(node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync(process.argv[1]))))" "$GOOGLE_TOKEN" 2>/dev/null || cat "$GOOGLE_TOKEN" | tr -d '\n\r')
+        else
+            GOOGLE_TOKEN=$(cat "$GOOGLE_TOKEN" | tr -d '\n\r')
+        fi
+    fi
 
     cat <<EOF > .env
 SESSION_ID="$SESSION_ID"
@@ -144,7 +177,7 @@ fi
 if [ -n "$PACKAGES_TO_INSTALL" ]; then
     echo "Installing missing packages: $PACKAGES_TO_INSTALL"
     if command -v apt &> /dev/null; then
-        sudo apt update && sudo apt install -y $PACKAGES_TO_INSTALL
+        $SUDO apt update && $SUDO apt install -y $PACKAGES_TO_INSTALL
     elif command -v pkg &> /dev/null; then
         pkg install -y $PACKAGES_TO_INSTALL
     fi
@@ -155,7 +188,7 @@ if ! command -v node &> /dev/null; then
     echo "Node.js is not installed. Attempting to install Node.js automatically..."
     if command -v apt &> /dev/null; then
         echo "Installing via apt (may prompt for sudo password)..."
-        sudo apt update && sudo apt install -y nodejs npm
+        $SUDO apt update && $SUDO apt install -y nodejs npm
     elif command -v pkg &> /dev/null; then
         echo "Installing via pkg (Termux)..."
         pkg install -y nodejs
@@ -267,33 +300,7 @@ if command -v docker &> /dev/null; then
     echo "cipher-restart" >> "$BOTRESTART_PATH"
     chmod +x "$BOTRESTART_PATH"
 
-    # AI Agent Integration
-    AGENT_SKILL_DIR="$DESKTOP_PATH/Cipher-MD"
-    mkdir -p "$AGENT_SKILL_DIR"
-    
-    cat <<EOF > "$AGENT_SKILL_DIR/SKILL.md"
----
-name: manage-cipher-md
-description: Manages the Cipher-MD WhatsApp Bot. Use this skill to start, stop, restart the bot or edit the environment variables.
----
 
-# Cipher-MD Management Skill
-You are in a workspace that manages a Cipher-MD WhatsApp Bot.
-
-## Available Commands
-- \`cipher-md\`: Starts the bot.
-- \`cipher-env\`: Opens the \`.env\` file for editing.
-- \`cipher-stop\`: Stops the bot (Docker only).
-- \`cipher-restart\`: Restarts the bot (Docker only).
-EOF
-
-    cat <<EOF > "$DESKTOP_PATH/AGENTS.md"
-# Cipher-MD Agent Workspace
-This workspace contains shortcuts and documentation for the Cipher-MD bot.
-Please refer to the skill at \`Cipher-MD/SKILL.md\` for management commands.
-EOF
-
-    cp *.md "$DESKTOP_PATH/" 2>/dev/null || true
 
     echo "Setup complete! Bot is running in Docker background."
     exit 0

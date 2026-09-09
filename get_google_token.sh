@@ -21,9 +21,17 @@ fi
 
 echo "✅ Found credentials at: $CRED_FILE"
 
-# Since we want this to work natively without dependencies, we use grep to extract client_id and secret
-CLIENT_ID=$(grep -o '"client_id"[^,]*' "$CRED_FILE" | head -n 1 | cut -d '"' -f 4)
-CLIENT_SECRET=$(grep -o '"client_secret"[^,]*' "$CRED_FILE" | head -n 1 | cut -d '"' -f 4)
+# Extract client_id and client_secret
+if command -v node &> /dev/null; then
+    CLIENT_ID=$(node -e "const d=require(require('path').resolve('$CRED_FILE')); const c=d.installed||d.web||{}; console.log(c.client_id||'')")
+    CLIENT_SECRET=$(node -e "const d=require(require('path').resolve('$CRED_FILE')); const c=d.installed||d.web||{}; console.log(c.client_secret||'')")
+elif command -v python3 &> /dev/null; then
+    CLIENT_ID=$(python3 -c "import json; d=json.load(open('$CRED_FILE')); print(d.get('installed', d.get('web', {})).get('client_id', ''))")
+    CLIENT_SECRET=$(python3 -c "import json; d=json.load(open('$CRED_FILE')); print(d.get('installed', d.get('web', {})).get('client_secret', ''))")
+else
+    echo "❌ Error: Node.js or Python3 is required to parse credentials.json."
+    exit 1
+fi
 
 if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
     echo "❌ Error: Invalid credentials.json format."
@@ -51,7 +59,7 @@ fi
 
 echo "Waiting for authentication on port $PORT..."
 
-# Function to run the local server using python3 if available (highly reliable)
+# Function to run the local server using python3 if available
 run_python_server() {
     python3 -c "
 import urllib.request, urllib.parse, http.server, sys
@@ -60,38 +68,45 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(b'<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff\"><h1>Authentication Successful! \\xe2\\x9c\\x85</h1><p>You can close this window now.</p></body></html>')
-        if 'code=' in self.path:
+        is_success = 'code=' in self.path
+        if is_success:
+            self.wfile.write(b'<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff\"><h1>Authentication Successful! \\xe2\\x9c\\x85</h1><p>You can close this window now.</p></body></html>')
             query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             print(query['code'][0])
+        else:
+            self.wfile.write(b'<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#330000;color:#fff\"><h1>Authentication Failed \\xe2\\x9d\\x8c</h1><p>Failed to get authorization code. Please check terminal.</p></body></html>')
         sys.exit(0)
 http.server.HTTPServer(('127.0.0.1', $PORT), Handler).handle_request()
 " 2>/dev/null
 }
 
-# Function to run local server using bash + netcat as fallback
-run_nc_server() {
-    # MacOS and Linux have slightly different nc behaviors
-    RESPONSE="HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body style='font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff'><h1>Authentication Successful! ✅</h1><p>You can close this window now.</p></body></html>"
-    
-    if nc -h 2>&1 | grep -q '\-l'; then
-        # BSD Netcat (Mac)
-        REQ=$(echo -e "$RESPONSE" | nc -l $PORT)
-    else
-        # GNU Netcat (Linux)
-        REQ=$(echo -e "$RESPONSE" | nc -l -p $PORT -q 1)
-    fi
-    echo "$REQ" | grep -o 'code=[^ &]*' | head -n 1 | cut -d '=' -f 2
+# Function to run local server using Node.js as fallback
+run_node_server() {
+    node -e "
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    if (req.url.includes('code=')) {
+        res.end('<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff\"><h1>Authentication Successful! ✅</h1><p>You can close this window now.</p></body></html>');
+        console.log(new URL(req.url, 'http://localhost').searchParams.get('code'));
+    } else {
+        res.end('<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#330000;color:#fff\"><h1>Authentication Failed ❌</h1><p>Failed to get authorization code. Please check terminal.</p></body></html>');
+    }
+    server.close();
+    process.exit(0);
+});
+server.listen($PORT);
+" 2>/dev/null
 }
 
-# Try Python3 first, fallback to Netcat
+# Try Python3 first, fallback to Node.js
 CODE=""
 if command -v python3 &> /dev/null; then
     CODE=$(run_python_server)
-elif command -v nc &> /dev/null; then
-    CODE=$(run_nc_server)
+elif command -v node &> /dev/null; then
+    CODE=$(run_node_server)
 else
-    echo "❌ Error: Neither python3 nor netcat (nc) are installed. Cannot start local listener."
+    echo "❌ Error: Neither python3 nor node are installed. Cannot start local listener."
     exit 1
 fi
 
@@ -108,8 +123,14 @@ if [ -n "$CODE" ]; then
     
     echo "$TOKEN_RESP" > token.json
     
-    # Minify JSON
-    MINIFIED=$(echo "$TOKEN_RESP" | tr -d ' \n\r')
+    # Minify JSON safely
+    if command -v node &> /dev/null; then
+        MINIFIED=$(node -e "console.log(JSON.stringify(JSON.parse(process.argv[1])))" "$TOKEN_RESP")
+    elif command -v python3 &> /dev/null; then
+        MINIFIED=$(python3 -c "import sys, json; print(json.dumps(json.loads(sys.argv[1]), separators=(',', ':')))" "$TOKEN_RESP")
+    else
+        MINIFIED=$(echo "$TOKEN_RESP" | tr -d '\n\r')
+    fi
     
     echo "--------------------------------------------------"
     echo -e "\033[32m✅ Success! Copy the entire string below and paste it into the 'GOOGLE_TOKEN' variable in Koyeb:\033[0m"
