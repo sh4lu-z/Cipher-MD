@@ -4,7 +4,7 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "   Cipher-MD Google Token Generator      " -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
-$credPaths = @("credentials.json", "E:\gemini\credentials.json", "..\credentials.json", "..\..\credentials.json")
+$credPaths = @("credentials.json", "..\credentials.json", "..\..\credentials.json")
 $credFile = $null
 
 foreach ($path in $credPaths) {
@@ -77,7 +77,12 @@ if ($request.Url.Query.Contains("code=")) {
 }
 
 # Send Response to Browser
-$resText = "<html><body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #1a1a1a; color: #fff;'><h1>Authentication Successful! ✅</h1><p>You can close this window now and return to the terminal.</p></body></html>"
+$isSuccess = ($null -ne $code)
+$resText = if ($isSuccess) {
+    "<html><body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #1a1a1a; color: #fff;'><h1>Authentication Successful! ✅</h1><p>You can close this window now and return to the terminal.</p></body></html>"
+} else {
+    "<html><body style='font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #330000; color: #fff;'><h1>Authentication Failed ❌</h1><p>Failed to get authorization code. You can close this window.</p></body></html>"
+}
 $buffer = [System.Text.Encoding]::UTF8.GetBytes($resText)
 $response.ContentLength64 = $buffer.Length
 $response.OutputStream.Write($buffer, 0, $buffer.Length)
@@ -117,5 +122,5 @@ if ($code) {
     Write-Host "❌ Failed to get authorization code." -ForegroundColor Red
 }
 
-Write-Host "Press any key to exit..."
-$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
+Write-Host "Press Enter to exit..."
+Read-Host | Out-Null

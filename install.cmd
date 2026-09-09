@@ -108,8 +108,17 @@ if "!CREATE_ENV!"=="Y" (
     set /p AI_AGENT_MODEL="AI Agent Model (default: gemini-3.1-flash-lite): "
     echo.
     echo [Agentic Tasks - Emails, Calendar, etc.]
-    set /p GOOGLE_CREDENTIALS="Google Credentials JSON (Paste as single line): "
-    set /p GOOGLE_TOKEN="Google Token JSON (Paste as single line): "
+    set /p GOOGLE_CREDENTIALS="Google Credentials JSON (Paste single line OR Drag & Drop file here): "
+    set "GC_TMP=!GOOGLE_CREDENTIALS:"=!"
+    if exist "!GC_TMP!" (
+        for /f "delims=" %%i in ('powershell -noprofile -command "(Get-Content -Path '!GC_TMP!' -Raw) -replace '\s+',''"') do set "GOOGLE_CREDENTIALS=%%i"
+    )
+
+    set /p GOOGLE_TOKEN="Google Token JSON (Paste single line OR Drag & Drop file here): "
+    set "GT_TMP=!GOOGLE_TOKEN:"=!"
+    if exist "!GT_TMP!" (
+        for /f "delims=" %%i in ('powershell -noprofile -command "(Get-Content -Path '!GT_TMP!' -Raw) -replace '\s+',''"') do set "GOOGLE_TOKEN=%%i"
+    )
 
     echo SESSION_ID="!SESSION_ID!"> .env
     echo PAIRING_NUMBER="!PAIRING_NUMBER!">> .env
@@ -149,11 +158,20 @@ if %errorlevel% neq 0 (
 :: 2. Check and Install FFmpeg
 echo Checking for FFmpeg...
 ffmpeg -version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo FFmpeg is not installed. Attempting to install via winget...
-    winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements --silent
+if !errorlevel! neq 0 (
+    echo [INFO] FFmpeg not found in current PATH. Checking system...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$pkg = Get-ChildItem -Path ($env:LOCALAPPDATA + '\Microsoft\WinGet\Packages') -Filter '*Gyan.FFmpeg*' -Directory -ErrorAction SilentlyContinue | Select-Object -First 1; if (-not $pkg) { Write-Host '[INFO] Downloading FFmpeg via winget...'; winget install --id Gyan.FFmpeg -e --source winget --accept-package-agreements --accept-source-agreements --silent | Out-Null; $pkg = Get-ChildItem -Path ($env:LOCALAPPDATA + '\Microsoft\WinGet\Packages') -Filter '*Gyan.FFmpeg*' -Directory -ErrorAction SilentlyContinue | Select-Object -First 1 }; if ($pkg) { $bin = (Get-ChildItem -Path $pkg.FullName -Filter 'ffmpeg.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1).DirectoryName; if ($bin) { $p = [Environment]::GetEnvironmentVariable('Path', 'User'); if ($p -notmatch [regex]::Escape($bin)) { $newPath = if ($p -and -not $p.EndsWith(';')) { $p + ';' + $bin } else { $p + $bin }; [Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); Write-Host '[INFO] Added FFmpeg to User PATH.' } else { Write-Host '[INFO] FFmpeg already in User PATH.' }; [IO.File]::WriteAllText($env:TEMP + '\ffmpeg_bin.txt', $bin) } }"
+    
+    if exist "%TEMP%\ffmpeg_bin.txt" (
+        set /p FOUND_FFMPEG=<"%TEMP%\ffmpeg_bin.txt"
+        del "%TEMP%\ffmpeg_bin.txt"
+        if defined FOUND_FFMPEG (
+            set "PATH=!PATH!;!FOUND_FFMPEG!"
+            echo [INFO] Updated current session PATH with: !FOUND_FFMPEG!
+        )
+    )
 ) else (
-    echo FFmpeg is installed.
+    echo FFmpeg is installed and ready.
 )
 
 echo Checking for Node.js...
@@ -282,29 +300,7 @@ if %errorlevel% equ 0 (
     echo @echo off > "!BOTRESTART_PATH!"
     echo cipher-restart >> "!BOTRESTART_PATH!"
 
-    :: AI Agent Integration
-    set AGENT_SKILL_DIR=!DESKTOP_PATH!\Cipher-MD
-    if not exist "!AGENT_SKILL_DIR!" mkdir "!AGENT_SKILL_DIR!"
-    
-    echo --- > "!AGENT_SKILL_DIR!\SKILL.md"
-    echo name: manage-cipher-md >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo description: Manages the Cipher-MD WhatsApp Bot. Use this skill to start, stop, restart the bot or edit the environment variables. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo --- >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo # Cipher-MD Management Skill >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo You are in a workspace that manages a Cipher-MD WhatsApp Bot. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo ## Available Commands >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo - `cipher-md`: Starts the bot. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo - `cipher-env`: Opens the `.env` file for editing. >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo - `cipher-stop`: Stops the bot ^(Docker only^). >> "!AGENT_SKILL_DIR!\SKILL.md"
-    echo - `cipher-restart`: Restarts the bot ^(Docker only^). >> "!AGENT_SKILL_DIR!\SKILL.md"
 
-    echo # Cipher-MD Agent Workspace > "!DESKTOP_PATH!\AGENTS.md"
-    echo This workspace contains shortcuts and documentation for the Cipher-MD bot. >> "!DESKTOP_PATH!\AGENTS.md"
-    echo Please refer to the skill at `Cipher-MD\SKILL.md` for management commands. >> "!DESKTOP_PATH!\AGENTS.md"
-    
-    copy /Y "*.md" "!DESKTOP_PATH!\" >nul
 
     echo Setup complete! Bot is running in Docker.
     pause

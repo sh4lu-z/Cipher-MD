@@ -3,7 +3,7 @@ require('dotenv').config({ quiet: true });
 
 module.exports = {
 
-    BOT_NAME: process.env.BOT_NAME || "Cipher",
+    BOT_NAME: process.env.BOT_NAME || "Cipher MD",
 
     CHANNEL_LINK: "https://whatsapp.com/channel/0029Vb6o3EiGJP8CoA3Olr28",
 
@@ -21,7 +21,7 @@ module.exports = {
 
 };
 
-const _0x_p3 = "SEC_P3:[117, 95, 122]";
+
 
 
 
