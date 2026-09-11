@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@google/genai": "latest",
+    "@pinecone-database/pinecone": "latest",
     "@upstash/box": "^0.6.3",
     "@whiskeysockets/baileys": "latest",
     "adm-zip": "latest",
@@ -48,7 +49,6 @@
     "mongoose": "latest",
     "node-cron": "latest",
     "openai": "latest",
-    "pdf-parse": "latest",
     "pino": "latest",
     "sharp": "latest",
     "ws": "latest",
