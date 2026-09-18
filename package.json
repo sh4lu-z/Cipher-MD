@@ -33,6 +33,7 @@
     "@pinecone-database/pinecone": "latest",
     "@upstash/box": "^0.6.3",
     "@whiskeysockets/baileys": "latest",
+    "@itsliaaa/baileys": "github:itsliaaa/baileys",
     "adm-zip": "latest",
     "axios": "latest",
     "chalk": "^4.1.2",
