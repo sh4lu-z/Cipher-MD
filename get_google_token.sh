@@ -21,123 +21,118 @@ fi
 
 echo "✅ Found credentials at: $CRED_FILE"
 
-# Extract client_id and client_secret
-if command -v node &> /dev/null; then
-    CLIENT_ID=$(node -e "const d=require(require('path').resolve('$CRED_FILE')); const c=d.installed||d.web||{}; console.log(c.client_id||'')")
-    CLIENT_SECRET=$(node -e "const d=require(require('path').resolve('$CRED_FILE')); const c=d.installed||d.web||{}; console.log(c.client_secret||'')")
-elif command -v python3 &> /dev/null; then
-    CLIENT_ID=$(python3 -c "import json; d=json.load(open('$CRED_FILE')); print(d.get('installed', d.get('web', {})).get('client_id', ''))")
-    CLIENT_SECRET=$(python3 -c "import json; d=json.load(open('$CRED_FILE')); print(d.get('installed', d.get('web', {})).get('client_secret', ''))")
-else
-    echo "❌ Error: Node.js or Python3 is required to parse credentials.json."
-    exit 1
-fi
+# Pure Bash/grep/sed extraction (No Node.js or Python required)
+CLIENT_ID=$(grep -o '"client_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$CRED_FILE" | head -n 1 | sed 's/.*"client_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+CLIENT_SECRET=$(grep -o '"client_secret"[[:space:]]*:[[:space:]]*"[^"]*"' "$CRED_FILE" | head -n 1 | sed 's/.*"client_secret"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
 
 if [ -z "$CLIENT_ID" ] || [ -z "$CLIENT_SECRET" ]; then
-    echo "❌ Error: Invalid credentials.json format."
+    echo "❌ Error: Invalid credentials.json format (missing client_id or client_secret)."
     exit 1
 fi
 
 PORT=51234
 REDIRECT_URI="http://127.0.0.1:$PORT/"
-SCOPE="https://mail.google.com/ https://www.googleapis.com/auth/contacts"
-ENCODED_SCOPE="https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts"
+ENCODED_REDIRECT_URI="http%3A%2F%2F127.0.0.1%3A$PORT%2F"
+ENCODED_SCOPE="https%3A%2F%2Fmail.google.com%2F%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcontacts%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ftasks"
 
-AUTH_URL="https://accounts.google.com/o/oauth2/v2/auth?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&response_type=code&scope=$ENCODED_SCOPE&access_type=offline&prompt=consent"
+AUTH_URL="https://accounts.google.com/o/oauth2/v2/auth?client_id=$CLIENT_ID&redirect_uri=$ENCODED_REDIRECT_URI&response_type=code&scope=$ENCODED_SCOPE&access_type=offline&prompt=consent"
+
+# Pure Bash URL decoder
+urldecode() {
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+# Extract 'code=' from a full URL, HTTP request line, or raw code string
+extract_code() {
+    local input="$1"
+    local raw_code=""
+    if [[ "$input" == *"code="* ]]; then
+        raw_code=$(printf '%s' "$input" | sed -n 's/.*[?&]code=\([^&#[:space:]]*\).*/\1/p')
+        if [ -z "$raw_code" ]; then
+            raw_code=$(printf '%s' "$input" | sed -n 's/.*code=\([^&#[:space:]]*\).*/\1/p')
+        fi
+    else
+        raw_code=$(printf '%s' "$input" | tr -d '[:space:]')
+    fi
+    urldecode "$raw_code"
+}
 
 echo "🌐 Opening browser for Google login..."
-echo "   (Browser will open automatically. Complete the login to catch the code.)"
+echo "   (Complete the login in your browser.)"
+echo ""
+echo "🔗 Login URL:"
+echo "$AUTH_URL"
+echo ""
 
 if command -v xdg-open &> /dev/null; then
-    xdg-open "$AUTH_URL" &> /dev/null
+    xdg-open "$AUTH_URL" &> /dev/null &
 elif command -v open &> /dev/null; then
-    open "$AUTH_URL" &> /dev/null
-else
-    echo "⚠️ Could not open browser automatically. Please manually open this URL:"
-    echo "$AUTH_URL"
+    open "$AUTH_URL" &> /dev/null &
+elif command -v termux-open-url &> /dev/null; then
+    termux-open-url "$AUTH_URL" &> /dev/null &
+elif command -v start &> /dev/null; then
+    start "$AUTH_URL" &> /dev/null &
 fi
 
-echo "Waiting for authentication on port $PORT..."
+HTML_SUCCESS='HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n<html><body style="font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff"><h1>Authentication Successful! &#9989;</h1><p>You can close this window and return to the terminal.</p></body></html>'
 
-# Function to run the local server using python3 if available
-run_python_server() {
-    python3 -c "
-import urllib.request, urllib.parse, http.server, sys
-class Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-        is_success = 'code=' in self.path
-        if is_success:
-            self.wfile.write(b'<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff\"><h1>Authentication Successful! \\xe2\\x9c\\x85</h1><p>You can close this window now.</p></body></html>')
-            query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-            print(query['code'][0])
-        else:
-            self.wfile.write(b'<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#330000;color:#fff\"><h1>Authentication Failed \\xe2\\x9d\\x8c</h1><p>Failed to get authorization code. Please check terminal.</p></body></html>')
-        sys.exit(0)
-http.server.HTTPServer(('127.0.0.1', $PORT), Handler).handle_request()
-" 2>/dev/null
-}
+RAW_CAPTURE=""
 
-# Function to run local server using Node.js as fallback
-run_node_server() {
-    node -e "
-const http = require('http');
-const server = http.createServer((req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    if (req.url.includes('code=')) {
-        res.end('<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#1a1a1a;color:#fff\"><h1>Authentication Successful! ✅</h1><p>You can close this window now.</p></body></html>');
-        console.log(new URL(req.url, 'http://localhost').searchParams.get('code'));
-    } else {
-        res.end('<html><body style=\"font-family:Arial;text-align:center;padding:50px;background:#330000;color:#fff\"><h1>Authentication Failed ❌</h1><p>Failed to get authorization code. Please check terminal.</p></body></html>');
-    }
-    server.close();
-    process.exit(0);
-});
-server.listen($PORT);
-" 2>/dev/null
-}
+# Try catching redirect automatically via netcat (nc) if running on a desktop environment
+if command -v nc &> /dev/null && { [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ] || [[ "$OSTYPE" == "darwin"* ]] || command -v cygpath &> /dev/null; }; then
+    echo "⏳ Waiting for browser redirect on port $PORT..."
+    echo "   (Press Ctrl+C if you logged in on a different device and want to paste the URL manually)"
+    if nc -h 2>&1 | grep -q -- "-N"; then
+        RAW_CAPTURE=$({ sleep 1; printf "%b" "$HTML_SUCCESS"; } | nc -l -N 127.0.0.1 "$PORT" 2>/dev/null | head -n 1)
+    elif nc -h 2>&1 | grep -q -- "-q"; then
+        RAW_CAPTURE=$({ sleep 1; printf "%b" "$HTML_SUCCESS"; } | nc -l -q 1 -p "$PORT" 127.0.0.1 2>/dev/null | head -n 1)
+    else
+        RAW_CAPTURE=$({ sleep 1; printf "%b" "$HTML_SUCCESS"; } | nc -l -p "$PORT" 127.0.0.1 2>/dev/null | head -n 1)
+    fi
+fi
 
-# Try Python3 first, fallback to Node.js
-CODE=""
-if command -v python3 &> /dev/null; then
-    CODE=$(run_python_server)
-elif command -v node &> /dev/null; then
-    CODE=$(run_node_server)
-else
-    echo "❌ Error: Neither python3 nor node are installed. Cannot start local listener."
-    exit 1
+CODE=$(extract_code "$RAW_CAPTURE")
+
+# Fallback: If no local listener succeeded (or headless VPS / minimal Linux without nc/python/node), prompt user to paste redirected URL
+if [ -z "$CODE" ]; then
+    echo ""
+    echo "📋 After logging in, your browser will redirect to a URL starting with:"
+    echo "   http://127.0.0.1:$PORT/?code=..."
+    echo "   (Even if the browser says 'This site can’t be reached', copy that full URL from the address bar!)"
+    echo ""
+    read -r -p "👉 Paste the redirected URL (or authorization code) here: " USER_INPUT
+    CODE=$(extract_code "$USER_INPUT")
 fi
 
 if [ -n "$CODE" ]; then
     echo "✅ Code received! Generating token..."
-    
-    # Exchange code for token using curl
-    TOKEN_RESP=$(curl -s -X POST https://oauth2.googleapis.com/token \
-        -d "code=$CODE" \
-        -d "client_id=$CLIENT_ID" \
-        -d "client_secret=$CLIENT_SECRET" \
-        -d "redirect_uri=$REDIRECT_URI" \
-        -d "grant_type=authorization_code")
-    
-    echo "$TOKEN_RESP" > token.json
-    
-    # Minify JSON safely
-    if command -v node &> /dev/null; then
-        MINIFIED=$(node -e "console.log(JSON.stringify(JSON.parse(process.argv[1])))" "$TOKEN_RESP")
-    elif command -v python3 &> /dev/null; then
-        MINIFIED=$(python3 -c "import sys, json; print(json.dumps(json.loads(sys.argv[1]), separators=(',', ':')))" "$TOKEN_RESP")
+
+    TOKEN_RESP=$(curl -s -X POST "https://oauth2.googleapis.com/token" \
+        --data-urlencode "code=$CODE" \
+        --data-urlencode "client_id=$CLIENT_ID" \
+        --data-urlencode "client_secret=$CLIENT_SECRET" \
+        --data-urlencode "redirect_uri=$REDIRECT_URI" \
+        --data-urlencode "grant_type=authorization_code")
+
+    if printf '%s' "$TOKEN_RESP" | grep -q '"access_token"'; then
+        printf '%s\n' "$TOKEN_RESP" > token.json
+
+        # Minify JSON using pure tr and sed (no Node/Python needed)
+        MINIFIED=$(printf '%s' "$TOKEN_RESP" | tr -d '\r\n' | sed 's/[[:space:]]*"/"/g; s/":[[:space:]]*/":/g; s/,[[:space:]]*/,/g; s/{[[:space:]]*/{/g; s/[[:space:]]*}/}/g')
+
+        echo "--------------------------------------------------"
+        echo -e "\033[32m✅ Success! Copy the entire string below and paste it into the 'GOOGLE_TOKEN' variable in Koyeb:\033[0m"
+        echo ""
+        echo -e "\033[35m$MINIFIED\033[0m"
+        echo ""
+        echo "--------------------------------------------------"
     else
-        MINIFIED=$(echo "$TOKEN_RESP" | tr -d '\n\r')
+        echo "❌ Error from Google OAuth server:"
+        echo "$TOKEN_RESP"
+        exit 1
     fi
-    
-    echo "--------------------------------------------------"
-    echo -e "\033[32m✅ Success! Copy the entire string below and paste it into the 'GOOGLE_TOKEN' variable in Koyeb:\033[0m"
-    echo ""
-    echo -e "\033[35m$MINIFIED\033[0m"
-    echo ""
-    echo "--------------------------------------------------"
 else
     echo "❌ Failed to get authorization code."
+    exit 1
 fi

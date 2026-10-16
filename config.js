@@ -14,10 +14,10 @@ module.exports = {
     // --- [ AI PLATFORM CONFIGURATION ] ---
     // Platforms: 'google', 'groq', 'openai'
     AI_CHAT_PLATFORM: process.env.AI_CHAT_PLATFORM || "google",
-    AI_CHAT_MODEL: process.env.AI_CHAT_MODEL || "gemini-3.1-flash-lite",
+    AI_CHAT_MODEL: process.env.AI_CHAT_MODEL || "gemini-3.5-flash-lite",
 
     AI_AGENT_PLATFORM: process.env.AI_AGENT_PLATFORM || "google",
-    AI_AGENT_MODEL: process.env.AI_AGENT_MODEL || "gemini-3.1-flash-lite",
+    AI_AGENT_MODEL: process.env.AI_AGENT_MODEL || "gemini-3.5-flash-lite",
 
 };
 
