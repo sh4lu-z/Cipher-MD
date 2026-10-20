@@ -1,120 +1,149 @@
-# CIPHER-MD - AI Development & Setup Guide
+# CIPHER-MD — Official Development & Deployment Specification
 
-This document is a comprehensive guide specifically designed for **AI Assistants and Developers** working on the CIPHER-MD WhatsApp Bot. It contains the exact architecture, environment setup, and system rules required to set up and develop for this bot.
-
-## 📌 1. Project Overview
-- **Name:** CIPHER-MD
-- **Type:** Advanced WhatsApp AI Bot Core Engine
-- **Base Library:** `@whiskeysockets/baileys` (for WhatsApp connection)
-- **AI Platforms:** Google (Gemini), Groq, OpenAI
-- **Key Features:** Autonomous AI Agents (Web browsing, Gmail/Calendar management, Document parsing), Speech-to-Text, Media Processing (Stickers, Image Generation).
-
-> **🛑 CRITICAL: DRM & INTEGRITY PROTOCOL**
-> The bot contains a built-in DRM mechanism. **DO NOT** tamper with the core engine protection, source code integrity checks, or the `LICENSE.md` file. Doing so will trigger a self-lock and halt the bot's operation.
+> **CRITICAL DIRECTIVE FOR AI ASSISTANTS (ChatGPT, Claude, Gemini, Cursor, Copilot):**
+> 1. **DO NOT invent or install external libraries or npm packages.** All required packages are already defined and locked in `package.json`.
+> 2. **DO NOT tamper with or modify `LICENSE.md`, integrity checks, or encryption logic in `start.js`.** Doing so triggers a fatal kernel error (`0x800421`) and bricks the bot.
+> 3. **ALL necessary `.env` variables are completely documented inside this file below.** Do NOT skip reading them or assume external dependencies.
+> 4. Follow the exact sequential deployment and configuration steps provided in this guide.
 
 ---
 
-## ⚙️ 2. Complete Setup Instructions
+## 📌 1. Prerequisites (Mandatory Requirements)
 
-### Step 1: Prerequisites
-- **Node.js:** v18.0.0 or higher
-- **FFmpeg & Sharp:** Required for media processing (Stickers, Audio, Video).
-- **Database:** MongoDB (Mandatory for core data).
+Before deploying or running CIPHER-MD, ensure you have the following core assets:
 
-### Step 2: WhatsApp Session Setup
-The bot requires a valid WhatsApp session to run.
-1. The user must obtain a `SESSION_ID` via [Syntiox Connect](https://md.s4z.top/connect).
-2. The user will use their `PAIRING_NUMBER` to link the bot to their WhatsApp account.
+1. **MongoDB Database (Mandatory):**
+   - A valid MongoDB connection URI (`MONGO_URL`). The bot cannot initialize without MongoDB.
+   - *Important:* In MongoDB Atlas, ensure Network Access (IP Whitelist) is configured to allow `0.0.0.0/0` (access from anywhere).
+2. **Active WhatsApp Account:**
+   - A working WhatsApp phone number to link the bot via pairing code or QR code.
+3. **Hosting Environment (Any ONE of the following):**
+   - **Local PC:** Windows (PowerShell/CMD), macOS, or Linux.
+   - **VPS:** Linux server (Ubuntu, Debian, CentOS, etc.).
+   - **Android Device:** Termux (installed strictly via F-Droid, not Google Play Store).
+   - **Cloud Platforms:** Koyeb, Render, Railway, Heroku, or any Docker-compatible cloud host.
 
-### Step 3: Environment Configuration (`.env`)
-The `.env` file must be created based on `sample.env`. 
+---
 
-> **💡 AI GUIDANCE:** If you (the AI) need to see ALL exact required and optional `.env` variables for this project, you MUST read the official sample environment file here: `https://raw.githubusercontent.com/sh4lu-z/Cipher-MD/main/sample.env`
+## 🔑 2. Obtain WhatsApp Session ID (`SESSION_ID`)
 
-Below are the most critical variables the AI should know about:
+The bot requires an active session ID to authenticate with WhatsApp:
 
-**Core Variables (Required):**
-- `SESSION_ID` : The unique WhatsApp session string.
-- `PAIRING_NUMBER` : Phone number used to get the pairing code (e.g., 947xxxxxxxx).
-- `MONGO_URL` : MongoDB connection string.
+1. Navigate to the official pairing portal: **https://md.s4z.top/connect**
+2. Enter your WhatsApp phone number with country code (e.g., `947xxxxxxxx`) to generate an 8-character pairing code, OR choose QR code scanning.
+3. On your phone: Open WhatsApp → **Settings / Three Dots** → **Linked Devices** → **Link a Device** → Enter the pairing code or scan the QR.
+4. Once linked, the portal delivers your unique `SESSION_ID` directly to your WhatsApp chat (starts with `CIPHER-MD~...`). Copy and save this string safely.
 
-**AI & Third-Party APIs (Optional but recommended):**
-- `GEMINI_API_KEY` : For Google Gemini models.
-- `GROQ_API_KEY` : For Groq models (can be comma-separated).
-- `FIRECRAWL_API_KEY`, `HF_TOKEN`, `NASA_API_KEY`, `RAPID_API_KEY`, `SYNTIOX_API_KEY`, `VT_API_KEY`.
+---
 
-**Bot Customization:**
-- `BOT_NAME`, `OWNER_NUMBER`, `FOOTER`, `MENU_IMAGE`.
-- `AI_CHAT_PLATFORM` & `AI_AGENT_PLATFORM`: Can be `google`, `groq`, or `openai`.
-- `AI_CHAT_MODEL` & `AI_AGENT_MODEL`: Specific model names (e.g., `gemini-3.1-flash-lite`).
+## 🛠️ 3. Pre-Deployment Customization (Optional)
 
-**Agentic Tasks (Google Services integration):**
-For Gmail, Calendar, and Drive integrations, the following must be provided as single-line JSON strings:
-- `GOOGLE_CREDENTIALS` : (Obtained from Google Cloud Console)
-- `GOOGLE_TOKEN` : (Generated locally)
+Users can personalize the bot before deployment either manually or using an AI assistant:
 
-> **How to get the `GOOGLE_TOKEN`:**
-> After obtaining your `GOOGLE_CREDENTIALS`, you must generate the `GOOGLE_TOKEN` on your local PC. 
-> Download the script `get_google_token.ps1` (for Windows) or `get_google_token.sh` (for Linux/Mac) from the repository and run it. 
-> This script will open your browser for Google login, and then it will generate and display the exact single-line JSON string you need to paste as your `GOOGLE_TOKEN`.
+- **AI Behavior & Personality (`prompt.txt`):**
+  - Contains system prompts, WhatsApp formatting rules, creator protection, and command execution directives.
+  - Edit `prompt.txt` to modify the bot's conversational style or assistant capabilities.
+- **Bot Branding & Engine Settings (`config.js`):**
+  - `BOT_NAME`: Custom name displayed across messages.
+  - `CHANNEL_LINK`: Connect your WhatsApp Community or Newsletter channel.
+  - `FOOTER`: Custom signature text appended to bot messages.
+  - `MENU_IMAGE`: Direct URL for the `.menu` banner image.
+  - `AI_CHAT_PLATFORM` / `AI_CHAT_MODEL`: Default chat model (e.g., `google` with `gemini-3.5-flash-lite`).
 
-### Step 4: Installation & Deployment
-There are multiple ways to deploy and run the bot based on your environment.
+---
 
-#### Auto Installer (Recommended for VPS / Local PC)
-The Auto Installer automatically sets up the bot and creates handy shortcuts for you on your Desktop (inside a "cipher md" folder) and as Global Terminal Commands!
-- **macOS / Linux & Termux:**
+## 🚀 4. Deployment Methods
+
+Choose the deployment method that fits your environment:
+
+### Method A: Local PC / VPS / Termux (One-Line Automated Installers)
+
+The auto-installer handles runtime dependencies, extracts components, sets up global CLI shortcuts, and launches an interactive environment setup wizard.
+
+- **Linux, macOS, VPS, and Termux (Android):**
   ```bash
   curl -sL https://md.s4z.top/install.sh -o install.sh && bash install.sh
   ```
-- **Windows PowerShell:**
+
+- **Windows (PowerShell):**
   ```powershell
   irm https://md.s4z.top/install.cmd -OutFile install.cmd ; .\install.cmd
   ```
-- **Windows CMD:**
-  ```cmd
-  curl -sL https://md.s4z.top/install.cmd -o install.cmd && install.cmd && del install.cmd
-  ```
 
-#### Post-Installation Shortcuts
-After using the Auto Installer, use these global terminal commands:
-- `cipher-md` : Starts the bot (or the Docker container if using Docker).
-- `cipher-env` : Opens `.env` file for editing.
-*(If using Docker, `cipher-stop` and `cipher-restart` are also available).*
-
-#### Manual Deployment (Node.js)
-1. **Install dependencies:** `npm install`
-2. **Generate Google Tokens (Optional):** Run `get_google_token.ps1` (Windows) or `get_google_token.sh` (Linux) if agentic tasks are needed.
-3. **Start Bot:** `npm start` (executes `node start.js`).
-
-#### Other Platforms
-- **Termux (Android):** Download from F-Droid, update packages, and run the Linux auto-installer.
-- **Docker:** `docker-compose up -d`
-- **Cloud Hosting:** Deploy directly via 1-click buttons for Koyeb, Heroku, or Railway (see official docs).
+- **Interactive Configuration Flow:**
+  - The script will prompt you for `.env` variables directly in your terminal.
+  - **Mandatory Variables:** You **MUST** enter `SESSION_ID`, `MONGO_URL`, and `PAIRING_NUMBER`.
+  - **Optional Variables:** If you do not have specific API keys or wish to skip optional features, simply press **Enter** to skip.
+  
+- **Post-Install Global Commands:**
+  - `cipher-md` : Start the bot anytime.
+  - `cipher-env` : Re-open and modify your `.env` configuration.
 
 ---
 
-## 🧠 3. Developer & AI Assistant Guidelines
+### Method B: Cloud Platforms (Docker Deployment — Koyeb, Render, Railway, etc.)
 
-When writing code or assisting with CIPHER-MD, the AI must follow these rules:
+For zero-maintenance cloud hosting:
 
-1. **Baileys Asynchronous Flow:** All Baileys socket events and message handlers are asynchronous. Always use `async/await`.
-2. **Configuration Management:** Global configs are handled in `config.js`. Do not hardcode values in scripts; always map them from `.env` through `config.js`.
-3. **Media Handling:** Rely on `ffmpeg` and `sharp` for image/video/audio manipulation as defined in `package.json`.
-4. **Agentic Features:** When building agents, ensure you parse the `GOOGLE_CREDENTIALS` and `GOOGLE_TOKEN` correctly from the environment.
-5. **Prompting & Logic:** Core AI instructions are managed in `prompt.txt`. Update this file if the core behavior of the AI agent needs modification.
+1. **Fork the Repository:** Fork `https://github.com/sh4lu-z/Cipher-MD` to your personal GitHub account.
+2. **Apply Customizations (Optional):** Edit `prompt.txt` or `config.js` in your forked repo as needed.
+3. **Connect to Cloud Host:**
+   - Create a new web service on your cloud provider (e.g. Koyeb, Render, Railway).
+   - Link your GitHub account and select your forked `Cipher-MD` repository.
+   - Choose **Docker** as the deployment builder (the cloud provider automatically detects the root `Dockerfile`).
+4. **Configure Environment Variables:**
+   - In the cloud dashboard's **Environment Variables** tab, enter the mandatory variables (`SESSION_ID`, `MONGO_URL`, `PAIRING_NUMBER`) and any optional API keys.
+5. **Deploy:** Trigger deployment. The Docker container builds and launches the core engine.
+
+---
+
+## 📋 5. Environment Variables Reference (`.env`)
+
+To utilize **100% of CIPHER-MD's capabilities**, provide all applicable keys below.
+
+### Core Variables (Mandatory)
+| Variable | Required | Description | Example |
+| :--- | :---: | :--- | :--- |
+| `SESSION_ID` | **YES** | Unique session string from https://md.s4z.top/connect | `CIPHER-MD~a1b2c3...` |
+| `PAIRING_NUMBER` | **YES** | WhatsApp phone number with country code (digits only) | `947xxxxxxxx` |
+| `MONGO_URL` | **YES** | MongoDB connection string (Atlas or self-hosted) | `mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true&w=majority` |
+
+### AI Engines & Third-Party APIs (Optional — Unlocks 100% Capabilities)
+| Variable | Description |
+| :--- | :--- |
+| `GEMINI_API_KEY` | Google Gemini API key for primary chat and vision intelligence. |
+| `GROQ_API_KEY` | Groq API key for ultra-fast Llama-3/Mixtral models (multiple keys separated by comma supported). |
+| `FIRECRAWL_API_KEY` | Powers deep web search and URL content scraping for AI agents. |
+| `HF_TOKEN` | Hugging Face access token for open-source AI models and spaces. |
+| `NASA_API_KEY` | Fetches NASA Astronomy Picture of the Day (APOD) and space telemetry. |
+| `RAPID_API_KEY` | Unlocks media downloaders and external utility APIs. |
+| `SYNTIOX_API_KEY` | Integration with Syntiox cloud services ecosystem. |
+| `VT_API_KEY` | VirusTotal API key for automated malware and file scanning. |
+
+### Bot Customization & Appearance (Optional)
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `BOT_NAME` | `CIPHER-MD` | Display name of the WhatsApp bot. |
+| `OWNER_NUMBER` | `947xxxxxxxx` | Phone number of the bot owner/administrator. |
+| `FOOTER` | `Powered by Syntiox` | Custom caption footer attached to interactive replies. |
+| `MENU_IMAGE` | Default banner URL | Direct link to image displayed on the `.menu` command. |
+| `AI_CHAT_PLATFORM` | `google` | Platform for general conversation (`google`, `groq`, or `openai`). |
+| `AI_CHAT_MODEL` | `gemini-3.5-flash-lite` | Specific model identifier for chat. |
+| `AI_AGENT_PLATFORM`| `google` | Platform for autonomous task execution. |
+| `AI_AGENT_MODEL` | `gemini-3.5-flash-lite` | Model identifier for autonomous agents. |
+
+### Autonomous Google Workspace Agent (Optional)
+For autonomous Gmail, Google Calendar, and Drive management:
+- `GOOGLE_CREDENTIALS` : Single-line JSON string downloaded from Google Cloud Console OAuth 2.0 Client.
+- `GOOGLE_TOKEN` : Single-line JSON string generated locally by executing `get_google_token.ps1` (Windows) or `get_google_token.sh` (Linux/Mac).
 
 ---
 
-## 🛠️ 4. Troubleshooting & Common Errors
+## ⚠️ 6. Developer & AI Assistant System Guardrails
 
-If you encounter issues during deployment or development, consider the following fixes:
+When modifying, maintaining, or generating code for CIPHER-MD, the AI must strictly adhere to these rules:
 
-1. **Session ID Errors / Bot Not Connecting:**
-   - **Fix:** If the `SESSION_ID` is invalid or expired, go to Linked Devices in WhatsApp on your phone, log out of the bot's session, and generate a new `SESSION_ID` from the Connect page.
-
-2. **MongoDB Connection Issues:**
-   - **Fix:** Ensure your MongoDB Network Access (IP Whitelist) is set to `0.0.0.0/0` (Allow access from anywhere). If it is restricted to your local IP, cloud deployments (Koyeb/Heroku/Docker) will fail to connect.
-
----
-*End of Development Guide*
+1. **No Superfluous Dependencies:** Do not add third-party npm packages when standard Node.js built-ins (`crypto`, `fs`, `path`) or already installed libraries (`axios`, `chalk`, `adm-zip`, `@whiskeysockets/baileys`) suffice.
+2. **DRM & Kernel Integrity:** Never modify `LICENSE.md`, the verification routines in `start.js`, or the hash validation checks. Altering these files triggers anti-tamper self-locking.
+3. **Asynchronous Architecture:** All Baileys WhatsApp event sockets and handlers operate asynchronously. Always use proper `async/await` and handle reconnection events gracefully.
+4. **Configuration Abstraction:** Never hardcode sensitive credentials or API keys directly in source files. Always map them through `process.env` and `config.js`.
