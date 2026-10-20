@@ -5,7 +5,7 @@ if [ ! -t 0 ]; then
     echo "[ERROR] This script requires interactive user input."
     echo "Please do not run it by piping (e.g. curl ... | bash)."
     echo "Instead, download and run it:"
-    echo "curl -O https://cipher-md.syntiox.top/install.sh && bash install.sh"
+    echo "curl -O https://md.s4z.top/install.sh && bash install.sh"
     echo "================================================================="
     exit 1
 fi

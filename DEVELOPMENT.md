@@ -23,7 +23,7 @@ This document is a comprehensive guide specifically designed for **AI Assistants
 
 ### Step 2: WhatsApp Session Setup
 The bot requires a valid WhatsApp session to run.
-1. The user must obtain a `SESSION_ID` via [Syntiox Connect](https://cipher-md.syntiox.top/connect).
+1. The user must obtain a `SESSION_ID` via [Syntiox Connect](https://md.s4z.top/connect).
 2. The user will use their `PAIRING_NUMBER` to link the bot to their WhatsApp account.
 
 ### Step 3: Environment Configuration (`.env`)
@@ -65,15 +65,15 @@ There are multiple ways to deploy and run the bot based on your environment.
 The Auto Installer automatically sets up the bot and creates handy shortcuts for you on your Desktop (inside a "cipher md" folder) and as Global Terminal Commands!
 - **macOS / Linux & Termux:**
   ```bash
-  curl -sL https://cipher-md.syntiox.top/install.sh -o install.sh && bash install.sh
+  curl -sL https://md.s4z.top/install.sh -o install.sh && bash install.sh
   ```
 - **Windows PowerShell:**
   ```powershell
-  irm https://cipher-md.syntiox.top/install.cmd -OutFile install.cmd ; .\install.cmd
+  irm https://md.s4z.top/install.cmd -OutFile install.cmd ; .\install.cmd
   ```
 - **Windows CMD:**
   ```cmd
-  curl -sL https://cipher-md.syntiox.top/install.cmd -o install.cmd && install.cmd && del install.cmd
+  curl -sL https://md.s4z.top/install.cmd -o install.cmd && install.cmd && del install.cmd
   ```
 
 #### Post-Installation Shortcuts

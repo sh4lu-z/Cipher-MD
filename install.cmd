@@ -9,7 +9,7 @@ echo =================================================================
 echo.
 echo Please use the following PowerShell command to install correctly:
 echo.
-echo irm https://cipher-md.syntiox.top/install.cmd -OutFile install.cmd ; .\install.cmd
+echo irm https://md.s4z.top/install.cmd -OutFile install.cmd ; .\install.cmd
 echo.
 exit /b 1
 

@@ -1,15 +1,15 @@
 <div align="center">
-  <a href="https://cipher-md.syntiox.top/">
+  <a href="https://md.s4z.top/">
     <img src="https://i.ibb.co/Fqkx25c5/balloon-Minimalist-Desktop-Wallpaper-1.png" alt="CIPHER-MD Banner" width="100%" style="border-radius: 15px; max-width: 600px;">
   </a>
 
   # ✦ CIPHER-MD ✦
   ### 🚀 Advanced WhatsApp AI Bot Core Engine
 
-  [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&random=false&width=435&center=true&lines=sh4lu-z;Developer+%2F+Designer;CIPHER-MD)](https://cipher-md.syntiox.top/)
+  [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&random=false&width=435&center=true&lines=sh4lu-z;Developer+%2F+Designer;CIPHER-MD)](https://md.s4z.top/)
 
   [![Author](https://img.shields.io/badge/Author-sh4lu--z-cyan?style=for-the-badge&logo=github)](https://github.com/sh4lu-z/Cipher-MD)
-  [![Website](https://img.shields.io/badge/Website-Live-success?style=for-the-badge&logo=vercel)](https://cipher-md.syntiox.top/)
+  [![Website](https://img.shields.io/badge/Website-Live-success?style=for-the-badge&logo=vercel)](https://md.s4z.top/)
   [![Docker](https://img.shields.io/badge/Docker-Ready-blue?style=for-the-badge&logo=docker)](https://www.docker.com/)
   [![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge&logo=law)](https://github.com/sh4lu-z/Cipher-MD/blob/main/LICENSE.md)
 
@@ -40,7 +40,7 @@ You must fork this repository to your GitHub account before deploying.
 
 ### 2️⃣ Connect to WhatsApp
 Link the bot to your WhatsApp account to get your unique `SESSION_ID`.
-👉 **[Get Session ID](https://cipher-md.syntiox.top/connect)**
+👉 **[Get Session ID](https://md.s4z.top/connect)**
 
 ### 3️⃣ Configure Environment
 Set up your `.env` variables. Here are the mandatory ones:
@@ -52,21 +52,21 @@ PAIRING_NUMBER=your_whatsapp_number
 
 ### 4️⃣ Deploy
 Follow the official documentation to deploy correctly (Docker, Koyeb, VPS, etc.).
-👉 **[Official Deployment Guide](https://cipher-md.syntiox.top/deployment)**
+👉 **[Official Deployment Guide](https://md.s4z.top/deployment)**
 
 ---
 
 ## 🔗 Useful Links
-- 🌐 **[Official Website](https://cipher-md.syntiox.top/)** - Full bot details, extra features, and 100+ commands.
+- 🌐 **[Official Website](https://md.s4z.top/)** - Full bot details, extra features, and 100+ commands.
 - 📖 **[Bot Wiki](https://github.com/sh4lu-z/Cipher-MD/wiki/%F0%9F%93%96-Cipher-MD)** - In-depth documentation.
-- ❓ **[FAQ](https://cipher-md.syntiox.top/faq)** - Frequently asked questions.
+- ❓ **[FAQ](https://md.s4z.top/faq)** - Frequently asked questions.
 - 🗣️ **[Discussions](https://github.com/sh4lu-z/Cipher-MD/discussions)** - Join the community.
 
 ---
 
 ## ⚠️ Legal & Security Notice
 
-By using CIPHER-MD, you agree to the **[Terms of Service](https://cipher-md.syntiox.top/terms-of-service)** and **[Privacy Policy](https://cipher-md.syntiox.top/privacy-policy)**.
+By using CIPHER-MD, you agree to the **[Terms of Service](https://md.s4z.top/terms-of-service)** and **[Privacy Policy](https://md.s4z.top/privacy-policy)**.
 
 > **🛑 SYSTEM INTEGRITY PROTOCOL & DRM**
 > **Modification of this core engine is strictly prohibited.** This software is protected by built-in DRM mechanisms. Tampering with the source code or `LICENSE` file will cause the bot to self-lock and immediately stop working. The author (`sh4lu-z`) is not responsible for WhatsApp bans or data loss.
